@@ -16,7 +16,7 @@ public class CryptoPairsController {
         this.marketDataService = marketDataService;
     }
 
-    @GetMapping
+    @GetMapping("/top")
     public ResponseEntity<List<String>> getCryptoPairs() {
         var res = marketDataService.getTopCryptoPairs(20);
         return ResponseEntity.ok().body(res);

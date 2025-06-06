@@ -27,7 +27,7 @@ public class MarketDataServiceImpl implements MarketDataService {
     public List<String> getTopCryptoPairs(int limit) {
         try {
             ResponseEntity<String> response = restTemplate.
-                    getForEntity(String.join(KRAKEN_API_URL, "/public/AssetPairs"), String.class);
+                    getForEntity(KRAKEN_API_URL + "public/Ticker", String.class);
             if (response != null) {
                 List<Pair> pairs = getTopPairsByVolume(response);
                 return pairs.stream()
@@ -50,11 +50,8 @@ public class MarketDataServiceImpl implements MarketDataService {
             JsonNode val = jsonNode.getValue();
             String pairName = jsonNode.getKey();
             String base = val.path("base").asText();
-            String quote = val.path("quote").asText();
-            double volume = val.path("vol_quote").asDouble(0);
-            if(quote.equals("ZUSD")) {
-                pairs.add(new Pair(pairName, base, quote, volume));
-            }
+            double volume = Double.parseDouble(val.path("v").get(1).asText());
+            pairs.add(new Pair(pairName, base, "", volume));
         });
         return pairs;
     }

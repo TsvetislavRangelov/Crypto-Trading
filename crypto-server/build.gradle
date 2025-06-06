@@ -25,6 +25,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-logging'
 	implementation 'org.slf4j:slf4j-api'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+	implementation 'org.json:json:20250517'
 }
 
 tasks.named('test') {
