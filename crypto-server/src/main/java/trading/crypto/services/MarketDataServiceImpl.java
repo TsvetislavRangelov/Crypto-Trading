@@ -49,9 +49,8 @@ public class MarketDataServiceImpl implements MarketDataService {
         assetPairs.properties().forEach(jsonNode -> {
             JsonNode val = jsonNode.getValue();
             String pairName = jsonNode.getKey();
-            String base = val.path("base").asText();
             double volume = Double.parseDouble(val.path("v").get(1).asText());
-            pairs.add(new Pair(pairName, base, "", volume));
+            pairs.add(new Pair(pairName, volume));
         });
         return pairs;
     }

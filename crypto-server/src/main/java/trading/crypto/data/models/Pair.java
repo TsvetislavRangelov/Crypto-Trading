@@ -2,14 +2,10 @@ package trading.crypto.data.models;
 
 public class Pair {
     private String name;
-    private String base;
-    private String quote;
     private double volume;
 
-    public Pair(String name, String base, String quote, double volume) {
+    public Pair(String name, double volume) {
         this.name = name;
-        this.base = base;
-        this.quote = quote;
         this.volume = volume;
     }
 
@@ -25,11 +21,17 @@ public class Pair {
         if(name == null || name.length() < 3){
             throw new IllegalArgumentException("Invalid symbol format: " + name);
         }
+        int quoteLength = 3;
         // in order to comply with ISO 4217-A3 as expected by Kraken
-        // first half of each pair is the base currency
-        String quote = name.substring(name.length() - 3);
         // second half is the quote
-        String base = name.substring(0, name.length() - 3);
+        String quote = name.substring(name.length() - 3);
+        // poor man's way of handling USDT as quote currency.
+        if(quote.endsWith("T")){
+            quote = "USDT";
+            quoteLength = 4;
+        }
+        // first half of each pair is the base currency
+        String base = name.substring(0, name.length() - quoteLength);
         return base + "/" + quote;
     }
 }

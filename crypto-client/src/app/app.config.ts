@@ -2,11 +2,17 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChang
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
+import { RxStompService } from './rx-stomp.service';
+import { rxStompServiceFactory } from './rx-stomp-service-factory';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes)
+    provideRouter(routes),
+    {
+      provide: RxStompService,
+      useFactory: rxStompServiceFactory
+    }
   ]
 };
