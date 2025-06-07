@@ -1,0 +1,56 @@
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  text-align: left;
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+.price-up,
+.price-down,
+.volume-up,
+.volume-down {
+  transition: color 0.3s ease-in-out;
+}
+.price-up {
+  color: green;
+  font-weight: bold;
+}
+
+.price-down {
+  color: red;
+  font-weight: bold;
+}
+
+.price-same {
+  color: gray;
+}
+
+.volume-up {
+  color: green;
+  font-weight: bold;
+}
+
+.volume-down {
+  color: red;
+  font-weight: bold;
+}
+
+.volume-same {
+  color: gray;
+}
+
+

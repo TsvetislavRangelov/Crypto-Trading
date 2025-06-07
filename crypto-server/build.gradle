@@ -29,6 +29,7 @@ dependencies {
 	implementation 'org.json:json:20250517'
 	implementation("org.webjars:stomp-websocket:2.3.4")
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation("org.postgresql:postgresql:42.7.6")
 }
 
 tasks.named('test') {

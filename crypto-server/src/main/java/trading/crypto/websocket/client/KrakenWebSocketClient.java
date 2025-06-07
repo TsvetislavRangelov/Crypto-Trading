@@ -42,7 +42,9 @@ public class KrakenWebSocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         logger.info("Received message: {}", message);
-        tickerService.forwardTickerMessage("/channel/ticker", message);
+        if(message.contains("update") || message.contains("snapshot")){
+            tickerService.forwardTickerMessage("/channel/ticker", message);
+        }
     }
 
     @Override

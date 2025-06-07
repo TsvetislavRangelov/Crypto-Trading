@@ -10,7 +10,7 @@ import trading.crypto.services.TickerService;
 @Controller
 public class TickerController {
 
-    private TickerService tickerService;
+    private final TickerService tickerService;
 
     public TickerController(TickerService tickerService) {
         this.tickerService = tickerService;

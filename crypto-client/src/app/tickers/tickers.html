@@ -1,1 +1,25 @@
-<p>tickers works!</p>
+<div class="container">
+  <h1>Cryptocurrency Tickers</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Symbol</th>
+        <th>Last Traded Price</th>
+        <th>Volume</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let ticker of tickers">
+        <td>{{ ticker.symbol }}</td>
+        <td>
+          {{ ticker.lastTradedPrice >= 1 ? 
+            (ticker.lastTradedPrice | number: '1.4-4') + getTickerQuoteCurrency(ticker) : 
+            (ticker.lastTradedPrice | number: '1.6-6') + getTickerQuoteCurrency(ticker)
+          }}
+        </td>
+
+        <td>{{ ticker.volume | number: '1.0-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
