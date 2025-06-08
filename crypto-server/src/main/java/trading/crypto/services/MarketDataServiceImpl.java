@@ -1,5 +1,7 @@
 package trading.crypto.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -21,37 +23,58 @@ public class MarketDataServiceImpl implements MarketDataService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public MarketDataServiceImpl(@Value("${kraken.rest.url}") String krakenUrL) {
-        this.KRAKEN_API_URL = krakenUrL;
+        KRAKEN_API_URL = krakenUrL;
     }
 
-    public List<String> getTopCryptoPairs(int limit) {
+    public List<Pair> getTopCryptoPairs(int limit) {
         try {
             ResponseEntity<String> response = restTemplate.
                     getForEntity(KRAKEN_API_URL + "public/Ticker", String.class);
-            if (response != null) {
-                List<Pair> pairs = getTopPairsByVolume(response);
-                return pairs.stream()
-                        .sorted((p1, p2) -> Double.compare(p2.getVolume(), p1.getVolume()))
-                        .limit(limit)
-                        .map(Pair::getName)
-                        .collect(Collectors.toList());
-            }
+            List<Pair> pairs = getTopPairsByPrice(response);
+            pairs = pairs.stream()
+                    .sorted((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()))
+                    .limit(limit)
+                    .toList();
+            // translate the REST format pairs to WS to use later when subscribing to the ticker channel.
+            ResponseEntity<String> r = restTemplate.getForEntity(KRAKEN_API_URL + "public/AssetPairs?pair=" +
+                            pairs.stream().map(Pair::getName).collect(Collectors.joining(",")),
+                    String.class);
+            translateRestPairNamesToWsPairNames(r, pairs);
+            return pairs;
         } catch (Exception e) {
             logger.info("Caught exception in getTopCryptoPairs: {}", Arrays.toString(e.getStackTrace()));
         }
         return List.of();
     }
 
-    private List<Pair> getTopPairsByVolume(ResponseEntity<String> response) throws Exception {
+    private List<Pair> getTopPairsByPrice(ResponseEntity<String> response) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode assetPairs = mapper.readTree(response.getBody()).path("result");
         List<Pair> pairs = new ArrayList<>();
         assetPairs.properties().forEach(jsonNode -> {
             JsonNode val = jsonNode.getValue();
             String pairName = jsonNode.getKey();
-            double volume = Double.parseDouble(val.path("v").get(1).asText());
-            pairs.add(new Pair(pairName, volume));
+            // xbt is missing in ws V2 but is present in REST asset pairs, therefore ignore it.
+            https://docs.kraken.com/api/docs/guides/spot-ws-intro/
+            if(pairName.endsWith("USD") && !pairName.contains("XBT")){
+                JsonNode p = val.get("p");
+                var first = p.get(0);
+                var price = first.asDouble();
+                pairs.add(new Pair(pairName, price));
+            }
         });
         return pairs;
+    }
+
+    private void translateRestPairNamesToWsPairNames(ResponseEntity<String> response, List<Pair> pairs)
+            throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode assetPairs = mapper.readTree(response.getBody()).path("result");
+        int i = 0;
+        for(var node : assetPairs){
+            var val = node.get("wsname").asText();
+            pairs.get(i).setName(val);
+            i++;
+        }
     }
 }

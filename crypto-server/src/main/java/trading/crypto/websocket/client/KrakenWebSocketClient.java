@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import trading.crypto.data.models.Pair;
 import trading.crypto.services.MarketDataService;
 import trading.crypto.services.TickerService;
 
@@ -17,7 +18,7 @@ import java.net.URI;
 
 @Component
 public class KrakenWebSocketClient extends WebSocketClient {
-    List<String> pairNames;
+    List<Pair> pairs;
     private final MarketDataService marketDataService;
     private final TickerService tickerService;
     private static final Logger logger = LoggerFactory.getLogger(KrakenWebSocketClient.class);
@@ -30,7 +31,7 @@ public class KrakenWebSocketClient extends WebSocketClient {
         super(new URI(krakenWsUrl));
         this.marketDataService = marketDataService;
         this.tickerService = tickerService;
-        pairNames = new ArrayList<>(20);
+        pairs = new ArrayList<>(20);
         connect();
     }
     @Override
@@ -50,7 +51,7 @@ public class KrakenWebSocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         logger.info("Closing websocket: {}", reason);
-        handleSubscriptionForTickerPairs(pairNames, "unsubscribe");
+        handleSubscriptionForTickerPairs(pairs, "unsubscribe");
     }
 
     @Override
@@ -64,29 +65,29 @@ public class KrakenWebSocketClient extends WebSocketClient {
                 .put("params", params).toString();
     }
 
-    private JSONObject buildRequestJsonObject(String channelParam, List<String> symbolParam){
+    private JSONObject buildRequestJsonObject(String channelParam, List<Pair> symbolParam){
         return new JSONObject().put("channel", channelParam)
                 .put("symbol",
-                        new JSONArray(symbolParam.toArray()));
+                        new JSONArray(symbolParam.stream().map(Pair::getName).toArray()));
     }
 
     // cron job to periodically resubscribe to top 20 coins.
-    @Scheduled(fixedRate = 50000)
+    @Scheduled(fixedRate = 50000000)
     private void resubscribe(){
         if(isOpen()){
             // avoid race conditions where one thread writes to pairNames and another reads at the same time.
             synchronized (this) {
                 // first unsubscribe from the current list of pairs.
-                handleSubscriptionForTickerPairs(pairNames, "unsubscribe");
+                handleSubscriptionForTickerPairs(pairs, "unsubscribe");
                 // get the new pairs from kraken
-                pairNames = marketDataService.getTopCryptoPairs(20);
+                pairs = marketDataService.getTopCryptoPairs(20);
                 // and resubscribe.
-                handleSubscriptionForTickerPairs(pairNames, "subscribe");
+                handleSubscriptionForTickerPairs(pairs, "subscribe");
             }
         }
     }
 
-    private void handleSubscriptionForTickerPairs(List<String> pairs, String method) {
+    private void handleSubscriptionForTickerPairs(List<Pair> pairs, String method) {
         if(!pairs.isEmpty()){
             var subscriptionParams = buildRequestJsonObject("ticker", pairs);
             String subscriptionMessage = buildWsMessage(method, subscriptionParams);

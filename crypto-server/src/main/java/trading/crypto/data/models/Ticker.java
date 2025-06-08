@@ -1,13 +1,13 @@
 package trading.crypto.data.models;
 
 public class Ticker {
-    private String symbol;
-    private double lastTradedPrice;
-    private double volume;
+    private final String symbol;
+    private final double price;
+    private final double volume;
 
     public Ticker(String symbol, double lastTradedPrice, double volume) {
         this.symbol = symbol;
-        this.lastTradedPrice = lastTradedPrice;
+        this.price = lastTradedPrice;
         this.volume = volume;
     }
 
@@ -15,8 +15,8 @@ public class Ticker {
         return symbol;
     }
 
-    public double getLastTradedPrice() {
-        return lastTradedPrice;
+    public double getPrice() {
+        return price;
     }
 
     public double getVolume() {
