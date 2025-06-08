@@ -17,7 +17,9 @@ export class Tickers implements OnInit {
 
     ngOnInit(): void {
         this.tickerService.tickers$.subscribe({
-          next: (tickerUpdates) => (this.tickers = tickerUpdates)
+          next: (tickerUpdates) => {
+            this.tickers = tickerUpdates;
+          }
         })
     }
 
