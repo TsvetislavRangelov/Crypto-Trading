@@ -3,14 +3,10 @@
   <button (click)="resetCashBalance()">Reset</button>
   <div style="display: flex;">
     <h4>
-      <a href="#holdings">
-      Holdings
-      </a>
+      <a href="#holdings">Holdings</a>
     </h4>
     <h4>
-      <a href="#transactions">
-        Transactions
-      </a>
+      <a href="#transactions">Transactions</a>
     </h4>
   </div>
   <table>
@@ -23,19 +19,19 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let ticker of tickers">
-        <td>{{tickers.indexOf(ticker) + 1}}</td>
+      <tr *ngFor="let ticker of tickers; let i = index">
+        <td>{{ i + 1 }}</td>
         <td>{{ ticker.symbol }}</td>
         <td>
-          {{ ticker.price >= 1 ? 
-            (ticker.price | number: '1.4-4') + getTickerQuoteCurrency(ticker) : 
-            (ticker.price | number: '1.6-6') + getTickerQuoteCurrency(ticker)
+          {{ ticker.price >= 1 
+            ? (ticker.price | number: '1.4-4') + getTickerQuoteCurrency(ticker) 
+            : (ticker.price | number: '1.6-6') + getTickerQuoteCurrency(ticker)
           }}
         </td>
         <td>
-          <button>Buy</button>
+          <input [(ngModel)]="quantities[i]" type="number" placeholder="quantity" />
+          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.BUY)">Buy</button>
           <button>Sell</button>
-          <input placeholder="quantity" />
         </td>
       </tr>
     </tbody>
