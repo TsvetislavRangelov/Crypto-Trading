@@ -1,5 +1,5 @@
 <div class="container">
-  <h3>Account balance: {{cashBalance$ | async}}</h3>
+  <h3>Account balance: {{globalStateService.getCashBalance()}}</h3>
   <button (click)="resetCashBalance()">Reset</button>
   <div style="display: flex;">
     <h4>

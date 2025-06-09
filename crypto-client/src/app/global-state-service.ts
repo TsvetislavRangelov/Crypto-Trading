@@ -1,20 +1,27 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { User } from './types/user';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GlobalStateService {
-  private userName: string | null = null;
+  private userSubject = new BehaviorSubject<User>({id: 0, username: null, cash: 0});
+  public user$ = this.userSubject.asObservable();
 
-  setUserName(name: string): void {
-    this.userName = name;
+  updateUser(newUser: User){
+    this.userSubject.next(newUser);
   }
 
-  getUserName(): string | null {
-    return this.userName;
+  getUser(): User {
+    return this.userSubject.getValue();
   }
 
   hasUserName(): boolean {
-    return this.userName !== null;
+    return this.getUser().username !== null;
+  }
+
+  getCashBalance(): number {
+    return this.getUser().cash;
   }
 }

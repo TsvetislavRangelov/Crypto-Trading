@@ -42,8 +42,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?;";
-        return jdbcTemplate.query(sql, (rs, _) ->
-                new User(rs.getLong(0), rs.getString(1), rs.getDouble(2))).getFirst();
+        return jdbcTemplate.queryForObject(
+                sql,
+                new Object[] {username},
+                (rs, _) -> new User(
+                        rs.getLong("did"),
+                        rs.getString("username"),
+                        rs.getDouble("cash")
+                )
+        );
     }
 
     @Override

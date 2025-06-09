@@ -2,6 +2,7 @@ package trading.crypto.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import trading.crypto.data.models.User;
 import trading.crypto.services.UserService;
 
 @RestController
@@ -15,9 +16,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody String username){
-        userService.tryRegisterUser(username);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<User> login(@RequestBody String username){
+        var user = userService.tryRegisterUser(username);
+        return ResponseEntity.ok().body(user);
     }
 
     @PostMapping("/reset")

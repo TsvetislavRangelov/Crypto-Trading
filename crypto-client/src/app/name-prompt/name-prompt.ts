@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GlobalStateService } from '../global-state-service';
 import { HttpClient } from '@angular/common/http';
+import { User } from '../types/user';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-name-prompt',
@@ -18,16 +20,14 @@ export class NamePromptComponent {
 
   saveName(): void {
     if (this.name.trim()) {
-      this.globalState.setUserName(this.name.trim());
-      const name = this.globalState.getUserName();
-      if(name !== null){
-        this.onLogin(name);
-      }
+      this.onLogin(this.name.trim()).subscribe((user) => {
+        this.globalState.updateUser(user);
+      })
     }
   }
 
-  public onLogin = (username: string) => {
-    this.httpClient.post("http://localhost:8080/login", username).subscribe((data) => console.log(data));
+  public onLogin = (username: string): Observable<User> => {
+     return this.httpClient.post<User>("http://localhost:8080/login", username);
   }
 
 

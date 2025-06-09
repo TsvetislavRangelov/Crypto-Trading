@@ -4,6 +4,6 @@
 
 <app-name-prompt *ngIf="!globalState.hasUserName()"></app-name-prompt>
     <div *ngIf="globalState.hasUserName()">
-      <h1>Welcome, {{ globalState.getUserName() }}!</h1>
+      <h1>Welcome, {{ globalState.getUser().username }}!</h1>
       <app-tickers></app-tickers>
     </div>

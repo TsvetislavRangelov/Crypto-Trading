@@ -14,9 +14,8 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class Tickers implements OnInit {
 
-  public cashBalance$ = new BehaviorSubject<number>(0);
   private httpClient = inject(HttpClient);
-  private globalStateService = inject(GlobalStateService);
+  public globalStateService = inject(GlobalStateService);
     tickers: Ticker[] = [];
 
     constructor(private tickerService: CryptoTickerService, private changeDetector: ChangeDetectorRef) {
@@ -38,18 +37,18 @@ export class Tickers implements OnInit {
     }
 
     public resetCashBalance = () => {
-      const username = this.globalStateService.getUserName();
+      const username = this.globalStateService.getUser().username;
       if(username !== null){
         this.httpClient.post("http://localhost:8080/reset", username).subscribe((data) => {console.log(data)});
       }
     }
 
     private loadCashBalance(): void {
-    const username = this.globalStateService.getUserName();
-    if (username !== null) {
+    const user = this.globalStateService.getUser();
+    if (user.username !== null) {
       this.httpClient
-        .get<number>('http://localhost:8080/cash/' + username)
-        .subscribe((data) => this.cashBalance$.next(data));
+        .get<number>('http://localhost:8080/cash/' + user.username)
+        .subscribe((data) => this.globalStateService.updateUser({id: user.id, username: user.username, cash: data}));
     }
   }
   

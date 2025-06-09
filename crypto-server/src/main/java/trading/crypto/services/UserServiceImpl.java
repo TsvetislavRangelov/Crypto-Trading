@@ -1,6 +1,7 @@
 package trading.crypto.services;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import trading.crypto.data.models.User;
 import trading.crypto.repository.UserRepository;
 
@@ -14,12 +15,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void tryRegisterUser(String username) {
+    @Transactional
+    public User tryRegisterUser(String username) {
         boolean exists = exists(username);
         if(!exists){
             // 10k initial cash balance.
             userRepository.save(new User(0, username, 10000));
         }
+        User user = userRepository.findByUsername(username);
+        return user;
     }
 
     @Override
