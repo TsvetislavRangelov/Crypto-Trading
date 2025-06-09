@@ -22,6 +22,6 @@ export class GlobalStateService {
   }
 
   getCashBalance(): number {
-    return this.getUser().cash;
+    return +this.getUser().cash.toPrecision(8);
   }
 }

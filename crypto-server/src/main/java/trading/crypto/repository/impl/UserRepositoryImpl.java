@@ -60,14 +60,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public double resetCashBalance(String username) {
-        double defaultCash = 10000;
-        String sql = "UPDATE users SET cash = ? WHERE username = ?;";
-        jdbcTemplate.update(sql, defaultCash, username);
-        return defaultCash;
-    }
-
-    @Override
     public double getCashBalance(String username) {
         String sql = "SELECT cash FROM users WHERE username = ?;";
         try {
@@ -77,5 +69,11 @@ public class UserRepositoryImpl implements UserRepository {
             System.err.println("No user found with username: " + username);
             return 0.0;
         }
+    }
+
+    @Override
+    public void updateCashBalance(String username, double newBalance) {
+        String sql = "UPDATE users SET cash = ? WHERE username = ?;";
+        jdbcTemplate.update(sql, newBalance, username);
     }
 }

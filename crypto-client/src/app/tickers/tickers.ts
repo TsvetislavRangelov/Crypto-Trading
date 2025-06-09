@@ -7,6 +7,7 @@ import { GlobalStateService } from '../global-state-service';
 import { FormsModule } from '@angular/forms';
 import { TransactionType } from '../types/transactionType';
 import { Transaction } from '../types/transaction';
+import { User } from '../types/user';
 
 @Component({
   selector: 'app-tickers',
@@ -48,7 +49,7 @@ export class Tickers implements OnInit {
     public resetCashBalance = () => {
       const username = this.globalStateService.getUser().username;
       if(username !== null){
-        this.httpClient.post("http://localhost:8080/reset", username).subscribe((data) => {console.log(data)});
+        this.httpClient.post("http://localhost:8080/cash/update", {username: username, newAmount: 10000}).subscribe((data) => {});
       }
     }
 
@@ -62,20 +63,30 @@ export class Tickers implements OnInit {
   }
 
     public executeTransaction(symbol: string, price: number, quantity: number, action: TransactionType) {
-      var userId = this.globalStateService.getUser().id;
+      const user = this.globalStateService.getUser();
       const transaction: Transaction =  {
         id: 0,
-        userId: userId,
+        userId: user.id,
         dateProduced: new Date(),
         symbol: symbol,
         pricePerShare: price,
         amountOfShares: quantity,
         action: action
       };
-      const isRegistered = this.httpClient.post<boolean>("http://localhost:8080/register", transaction).subscribe((x) => {});
-      if(isRegistered){
-        console.log("Transaction went through fine! ")
+      const newBalance = user.cash - transaction.pricePerShare * transaction.amountOfShares;
+      if(newBalance > 0){
+        const updateCashRequestBody = {
+          username: user.username,
+          newAmount: user.cash - transaction.pricePerShare * transaction.amountOfShares
+        }
+        const updatedUserData: User = {
+          id: user.id,
+          username: user.username,
+          cash: newBalance
+        }
+        this.httpClient.post("http://localhost:8080/register", transaction).subscribe((x) => {});
+        this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
+        this.globalStateService.updateUser(updatedUserData);
       }
-}
-  
-}
+    }
+  }

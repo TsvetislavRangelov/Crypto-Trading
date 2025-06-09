@@ -3,6 +3,7 @@ package trading.crypto.controllers;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import trading.crypto.data.models.User;
+import trading.crypto.data.models.dto.UpdateBalanceRequest;
 import trading.crypto.services.UserService;
 
 @RestController
@@ -21,9 +22,9 @@ public class UserController {
         return ResponseEntity.ok().body(user);
     }
 
-    @PostMapping("/reset")
-    public double reset(@RequestBody String username){
-        return userService.resetCashBalance(username);
+    @PostMapping("/cash/update")
+    public void updateBalance(@RequestBody UpdateBalanceRequest requestBody){
+        userService.updateCashBalance(requestBody.getUsername(), requestBody.getNewAmount());
     }
 
     @GetMapping("/cash/{username}")

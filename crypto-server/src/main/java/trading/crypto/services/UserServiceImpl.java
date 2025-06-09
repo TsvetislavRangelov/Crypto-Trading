@@ -32,13 +32,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public double resetCashBalance(String username){
-        return userRepository.resetCashBalance(username);
+    public double getCashBalance(String username) {
+        return userRepository.getCashBalance(username);
     }
 
     @Override
-    public double getCashBalance(String username) {
-        return userRepository.getCashBalance(username);
+    public void updateCashBalance(String username, double newAmount){
+        userRepository.updateCashBalance(username, newAmount);
     }
 
 }
