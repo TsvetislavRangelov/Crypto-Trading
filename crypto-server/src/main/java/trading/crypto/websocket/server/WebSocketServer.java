@@ -22,6 +22,6 @@ public class WebSocketServer implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/crypto-trading").setAllowedOrigins("*");
+        registry.addEndpoint("/crypto-trading").setAllowedOrigins("http://localhost:4200");
     }
 }

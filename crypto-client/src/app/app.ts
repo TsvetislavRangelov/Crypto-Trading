@@ -1,16 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Tickers } from "./tickers/tickers";
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import { NamePromptComponent } from "./name-prompt/name-prompt";
+import { CommonModule } from '@angular/common';
+import { GlobalStateService } from './global-state-service';
+import { HttpClient } from '@angular/common/http';
 
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Tickers],
+  imports: [RouterOutlet, Tickers, NamePromptComponent, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
+  constructor(public globalState: GlobalStateService){}
   protected title = 'crypto-client';
 }
-ModuleRegistry.registerModules([AllCommunityModule]);

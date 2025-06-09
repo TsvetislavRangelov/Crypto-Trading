@@ -1,7 +1,6 @@
 package trading.crypto.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -18,12 +17,13 @@ import java.util.stream.Collectors;
 @Service
 public class MarketDataServiceImpl implements MarketDataService {
 
+    private boolean test = false;
     private static final Logger logger = LoggerFactory.getLogger(MarketDataServiceImpl.class);
     private static String KRAKEN_API_URL;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public MarketDataServiceImpl(@Value("${kraken.rest.url}") String krakenUrL) {
-        KRAKEN_API_URL = krakenUrL;
+    public MarketDataServiceImpl(@Value("${kraken.rest.url}") String krakenUrl) {
+        KRAKEN_API_URL = krakenUrl;
     }
 
     public List<Pair> getTopCryptoPairs(int limit) {
@@ -55,7 +55,7 @@ public class MarketDataServiceImpl implements MarketDataService {
             JsonNode val = jsonNode.getValue();
             String pairName = jsonNode.getKey();
             // xbt is missing in ws V2 but is present in REST asset pairs, therefore ignore it.
-            https://docs.kraken.com/api/docs/guides/spot-ws-intro/
+            // https://docs.kraken.com/api/docs/guides/spot-ws-intro/
             if(pairName.endsWith("USD") && !pairName.contains("XBT")){
                 JsonNode p = val.get("p");
                 var first = p.get(0);

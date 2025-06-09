@@ -1,13 +1,14 @@
 <div class="container">
-  <h3>Account balance: $10,000</h3>
+  <h3>Account balance: {{cashBalance$ | async}}</h3>
+  <button (click)="resetCashBalance()">Reset</button>
   <div style="display: flex;">
     <h4>
-      <a href="/holdings">
+      <a href="#holdings">
       Holdings
       </a>
     </h4>
     <h4>
-      <a href="/transactions">
+      <a href="#transactions">
         Transactions
       </a>
     </h4>

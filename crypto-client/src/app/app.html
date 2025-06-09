@@ -2,4 +2,8 @@
     <h1>Crypto Trading Platform</h1>
 </div>
 
-<app-tickers></app-tickers>
+<app-name-prompt *ngIf="!globalState.hasUserName()"></app-name-prompt>
+    <div *ngIf="globalState.hasUserName()">
+      <h1>Welcome, {{ globalState.getUserName() }}!</h1>
+      <app-tickers></app-tickers>
+    </div>
