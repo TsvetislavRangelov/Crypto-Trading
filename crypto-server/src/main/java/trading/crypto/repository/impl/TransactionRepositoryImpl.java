@@ -40,7 +40,8 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public int delete(long id) {
-        return 0;
+    public void delete(long userId) {
+        String sql = "DELETE FROM transactions WHERE user_id = ?;";
+        jdbcTemplate.update(sql, userId);
     }
 }

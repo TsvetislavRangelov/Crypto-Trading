@@ -1,12 +1,12 @@
 <div class="container">
   <h3>Account balance: ${{globalStateService.getCashBalance()}}</h3>
-  <button (click)="resetCashBalance()">Reset</button>
+  <button (click)="resetAccount()">Reset</button>
   <div style="display: flex;">
     <h4>
       <a href="#holdings">Holdings</a>
     </h4>
     <h4>
-      <a href="#transactions">Transactions</a>
+      <a href="/transactions">Transactions</a>
     </h4>
   </div>
   <table>
@@ -31,7 +31,7 @@
         <td>
           <input [(ngModel)]="quantities[i]" type="number" placeholder="quantity" />
           <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.BUY)">Buy</button>
-          <button>Sell</button>
+          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.SELL)">Sell</button>
         </td>
       </tr>
     </tbody>

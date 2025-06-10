@@ -15,7 +15,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/registerTransaction")
     public ResponseEntity<Boolean> registerTransaction(@RequestBody Transaction transaction) {
         transactionService.createTransaction(transaction);
         return ResponseEntity.ok(true);

@@ -34,8 +34,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User findById(long id) {
         String sql = "SELECT * FROM users WHERE did = ?;";
-        var user = jdbcTemplate.query(sql, (rs, _) ->
-            new User(rs.getLong(0), rs.getString(1), rs.getDouble(2))).getFirst();
+        var user = jdbcTemplate.queryForObject(sql, new Object[] {id}, (rs, rowNum) -> new User(
+                rs.getLong("did"),
+                rs.getString("username"),
+                rs.getDouble("cash")
+        ));
         return user;
     }
 

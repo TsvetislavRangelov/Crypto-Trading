@@ -7,5 +7,5 @@ public interface TransactionRepository {
     int save(Transaction transaction);
     List<Transaction> findAll();
     Transaction find(long id);
-    int delete(long id);
+    void delete(long userId);
 }

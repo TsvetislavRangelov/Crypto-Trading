@@ -22,6 +22,7 @@ export class NamePromptComponent {
     if (this.name.trim()) {
       this.onLogin(this.name.trim()).subscribe((user) => {
         this.globalState.updateUser(user);
+
       })
     }
   }

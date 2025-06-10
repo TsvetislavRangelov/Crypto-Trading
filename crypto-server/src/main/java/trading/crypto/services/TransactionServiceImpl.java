@@ -18,4 +18,8 @@ public class TransactionServiceImpl implements TransactionService {
     public int createTransaction(Transaction transaction) {
         return this.transactionRepository.save(transaction);
     }
+
+    public void deleteForUserId(long userId) {
+        this.transactionRepository.delete(userId);
+    }
 }

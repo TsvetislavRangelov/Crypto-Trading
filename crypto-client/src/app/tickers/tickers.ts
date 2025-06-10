@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { TransactionType } from '../types/transactionType';
 import { Transaction } from '../types/transaction';
 import { User } from '../types/user';
+import { Holding } from '../types/holding';
 
 @Component({
   selector: 'app-tickers',
@@ -46,10 +47,11 @@ export class Tickers implements OnInit {
       return " " + symbol.substring(symbol.length, symbol.indexOf('/') + 1); // + 1 to remove the / before the quote.
     }
 
-    public resetCashBalance = () => {
-      const username = this.globalStateService.getUser().username;
-      if(username !== null){
-        this.httpClient.post("http://localhost:8080/cash/update", {username: username, newAmount: 10000}).subscribe((data) => {});
+    public resetAccount = () => {
+      const user = this.globalStateService.getUser();
+      if(user.username !== null){
+        this.httpClient.get(`http://localhost:8080/reset/${user.username}`).subscribe((data) => {});
+        this.globalStateService.updateUser({id: user.id, username: user.username, cash: 10000});
       }
     }
 
@@ -73,20 +75,87 @@ export class Tickers implements OnInit {
         amountOfShares: quantity,
         action: action
       };
+      if(action === TransactionType.BUY){
+        this.buy(symbol, price, quantity, transaction, user);
+      }
+      else{
+        this.sell(transaction, user);
+      }
+    
+    }
+
+    private registerHolding(id: number, userId: number, symbol: string, invested: number, amount: number, avgPrice: number){
+        const holding: Holding = {
+              id: id,
+              userId: userId,
+              invested: invested,
+              symbol: symbol,
+              shareAmount: amount,
+              avg: avgPrice
+          };
+        this.httpClient.post("http://localhost:8080/holdings", holding).subscribe((x) => {});    
+    }
+
+    private sell(transaction: Transaction, user: User){
+      const newBalance = user.cash + transaction.pricePerShare * transaction.amountOfShares;
+      const updateCashRequestBody = {
+          username: user.username,
+          newAmount: newBalance
+        };
+        const updatedUserData: User = {
+          id: user.id,
+          username: user.username,
+          cash: newBalance
+        };
+        this.httpClient.post("http://localhost:8080/registerTransaction", transaction).subscribe((x) => {});
+        this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
+        this.httpClient.get<Holding>(`http://localhost:8080/holdings/${user.id}?symbol=${transaction.symbol}`).subscribe((x) => {
+          // sell partial.
+          if(x !== null){
+            if(x.shareAmount > transaction.amountOfShares){
+              const newAvg = (x.invested + (transaction.pricePerShare * transaction.amountOfShares)) / (x.shareAmount + transaction.amountOfShares);
+              this.registerHolding(x.id, user.id, x.symbol, x.invested - (transaction.pricePerShare * transaction.amountOfShares), x.shareAmount - transaction.amountOfShares, newAvg);
+              this.globalStateService.updateUser(updatedUserData);
+            }
+            else{
+            // sell everything.
+            this.httpClient.delete(`http://localhost:8080/holdings/delete/${user.id}?symbol=${transaction.symbol}`).subscribe((x) =>{
+              if(x){
+                this.globalStateService.updateUser(updatedUserData);
+              }
+            })
+          }
+          }
+        });
+    }
+
+    private buy(symbol: string, price: number, quantity: number, transaction: Transaction, user: User){
       const newBalance = user.cash - transaction.pricePerShare * transaction.amountOfShares;
       if(newBalance > 0){
         const updateCashRequestBody = {
           username: user.username,
-          newAmount: user.cash - transaction.pricePerShare * transaction.amountOfShares
+          newAmount: newBalance
         }
         const updatedUserData: User = {
           id: user.id,
           username: user.username,
           cash: newBalance
         }
-        this.httpClient.post("http://localhost:8080/register", transaction).subscribe((x) => {});
+        this.httpClient.post("http://localhost:8080/registerTransaction", transaction).subscribe((x) => {});
         this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
-        this.globalStateService.updateUser(updatedUserData);
+        this.httpClient.get<Holding>(`http://localhost:8080/holdings/${user.id}?symbol=${symbol}`).subscribe((x) => {
+          if(x !== null){
+            const newAvg = (x.invested + (price * quantity)) / (x.shareAmount + quantity);
+            this.registerHolding(x.id, user.id, x.symbol, x.invested + (price * quantity), x.shareAmount + quantity, newAvg);
+            this.globalStateService.updateUser(updatedUserData);
+          }
+          else{
+            // initially, the avg price is the current price of the asset and the invested amount is the price
+            // per share times the amount of shares to buy.
+            this.registerHolding(0 ,user.id, symbol, price * quantity, quantity, price);
+            this.globalStateService.updateUser(updatedUserData);
+          }
+        });
       }
     }
   }

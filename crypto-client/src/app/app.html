@@ -1,9 +1,11 @@
 <div style="text-align:center">
     <h1>Crypto Trading Platform</h1>
 </div>
+<div *ngIf="!globalState.hasUserName(); else mainContent">
+  <app-name-prompt *ngIf="!globalState.hasUserName()"></app-name-prompt>
+</div>
 
-<app-name-prompt *ngIf="!globalState.hasUserName()"></app-name-prompt>
-    <div *ngIf="globalState.hasUserName()">
+    <ng-template #mainContent>
       <h1>Welcome, {{ globalState.getUser().username }}!</h1>
-      <app-tickers></app-tickers>
-    </div>
+      <router-outlet></router-outlet>
+    </ng-template>
