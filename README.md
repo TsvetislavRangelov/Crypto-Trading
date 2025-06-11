@@ -23,7 +23,15 @@ is a toy project and I don't have infinite time. I also have my finals in a week
 Thanks for checking my work out!
 
 ### Dependencies
-Docker desktop and/or the Docker CLI should be installed along with Docker Compose.
+Docker desktop and/or the Docker CLI should be installed along with Docker Compose
+
+JDK 24, NPM and Angular.
+https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+https://www.oracle.com/java/technologies/downloads/
+
+```
+npm install -g @angular/cli
+```
 
 The availability of the Kraken API is also required.
 https://status.kraken.com/
