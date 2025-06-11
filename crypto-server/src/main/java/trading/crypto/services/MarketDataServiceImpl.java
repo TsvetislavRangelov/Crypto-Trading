@@ -42,7 +42,7 @@ public class MarketDataServiceImpl implements MarketDataService {
             translateRestPairNamesToWsPairNames(r, pairs);
             return pairs;
         } catch (Exception e) {
-            logger.info("Caught exception in getTopCryptoPairs: {}", Arrays.toString(e.getStackTrace()));
+                logger.info("Caught exception in getTopCryptoPairs: {}", Arrays.toString(e.getStackTrace()));
         }
         return List.of();
     }

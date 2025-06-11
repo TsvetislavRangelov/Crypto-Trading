@@ -44,14 +44,30 @@ public class KrakenWebSocketClient extends WebSocketClient {
     public void onMessage(String message) {
         logger.info("Received message: {}", message);
         if(message.contains("update") || message.contains("snapshot")){
-            tickerService.forwardTickerMessage("/channel/ticker", message);
+            tickerService.forwardTickerMessage("/channel/tickers", message);
         }
+    }
+
+    private String extractSymbolFromMessage(String message) {
+        String symbol = null;
+        try {
+            JSONObject json = new JSONObject(message);
+
+            JSONArray dataArray = json.optJSONArray("data");
+            if (dataArray != null && !dataArray.isEmpty()) {
+                JSONObject firstDataObject = dataArray.getJSONObject(0);
+                symbol = firstDataObject.optString("symbol", null);
+            }
+        } catch (Exception e) {
+            logger.error("Error extracting symbol from message: {}", e.getMessage());
+        }
+        return symbol;
     }
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
         logger.info("Closing websocket: {}", reason);
-        handleSubscriptionForTickerPairs(pairs, "unsubscribe");
+        handleSubscriptionForTickerPairs(pairs.stream().map(Pair::getName).toList(), "unsubscribe");
     }
 
     @Override
@@ -65,29 +81,29 @@ public class KrakenWebSocketClient extends WebSocketClient {
                 .put("params", params).toString();
     }
 
-    private JSONObject buildRequestJsonObject(String channelParam, List<Pair> symbolParam){
+    private JSONObject buildRequestJsonObject(String channelParam, List<String> symbolParam){
         return new JSONObject().put("channel", channelParam)
                 .put("symbol",
-                        new JSONArray(symbolParam.stream().map(Pair::getName).toArray()));
+                        new JSONArray(symbolParam.toArray()));
     }
 
     // cron job to periodically resubscribe to top 20 coins.
-    @Scheduled(fixedRate = 50000000)
+    @Scheduled(fixedRate = 500000)
     private void resubscribe(){
         if(isOpen()){
             // avoid race conditions where one thread writes to pairNames and another reads at the same time.
             synchronized (this) {
                 // first unsubscribe from the current list of pairs.
-                handleSubscriptionForTickerPairs(pairs, "unsubscribe");
+                handleSubscriptionForTickerPairs(pairs.stream().map(Pair::getName).toList(), "unsubscribe");
                 // get the new pairs from kraken
                 pairs = marketDataService.getTopCryptoPairs(20);
                 // and resubscribe.
-                handleSubscriptionForTickerPairs(pairs, "subscribe");
+                handleSubscriptionForTickerPairs(pairs.stream().map(Pair::getName).toList(), "subscribe");
             }
         }
     }
 
-    private void handleSubscriptionForTickerPairs(List<Pair> pairs, String method) {
+    public void handleSubscriptionForTickerPairs(List<String> pairs, String method) {
         if(!pairs.isEmpty()){
             var subscriptionParams = buildRequestJsonObject("ticker", pairs);
             String subscriptionMessage = buildWsMessage(method, subscriptionParams);

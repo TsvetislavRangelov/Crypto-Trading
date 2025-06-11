@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import trading.crypto.components.TickerMessageProcessor;
 import trading.crypto.data.models.Ticker;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -38,10 +36,30 @@ public class TickerServiceImpl implements TickerService {
             // ideally we want to send an error back to the client as well but dont wanna bother.
             logger.error("Error in ticker deserialization: {}", e.getMessage());
         }
-        if(ticker != null) {
-            tickerCache.put(ticker.getSymbol(), ticker);
-            messagingTemplate.convertAndSend(topic, ticker);
+        if (ticker == null) {
+            return;
         }
+        synchronized (tickerCache) {
+            if(tickerCache.containsKey(ticker.getSymbol())) {
+                tickerCache.put(ticker.getSymbol(), ticker);
+            }
+            if(tickerCache.size() < 20){
+                tickerCache.put(ticker.getSymbol(), ticker);
+            }
+            // get the current cheapest ticker.
+            Optional<Ticker> currentLowestTicker = tickerCache.values().
+                    stream().
+                    min(Comparator.comparingDouble(Ticker::getPrice));
+            Ticker finalTicker = ticker; // this needs to be final.
+            currentLowestTicker.ifPresent(t -> {
+                if (finalTicker.getPrice() > t.getPrice() && tickerCache.size() == 20) {
+                    // update the hashmap with the current ticker since it costs more.
+                    tickerCache.remove(t.getSymbol());
+                    tickerCache.put(finalTicker.getSymbol(), finalTicker);
+                }
+            });
+        }
+        messagingTemplate.convertAndSend(topic, ticker);
     }
 
     @Override

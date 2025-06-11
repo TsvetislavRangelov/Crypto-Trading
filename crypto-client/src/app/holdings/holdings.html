@@ -1,0 +1,41 @@
+<div class="container">
+  <h2>Your holdings</h2>
+  <h3>
+    <a href="/">Back to tickers</a>
+  </h3>
+
+  <div *ngIf="holdings; else loading">
+    <div *ngIf="holdings.length; else noHoldings">
+      <table>
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Current price</th>
+            <th>Total Investment</th>
+            <th>Amount</th>
+            <th>Avg</th>
+            <th>P/L</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let holding of holdings; let i = index">
+            <td>{{ holding.symbol}}</td>
+            <td>{{getTickerPriceForSymbol(holding.symbol)}}</td>
+            <td>${{ holding.invested }}</td>
+            <td>{{ holding.shareAmount }}</td>
+            <td>{{holding.avg}}</td>
+            <td>{{getPlForHolding(holding.symbol, holding.avg, holding.shareAmount) | number: '1.4-6' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <p>Loading holdings...</p>
+  </ng-template>
+
+  <ng-template #noHoldings>
+    <p>No holdings available for this user.</p>
+  </ng-template>
+</div>

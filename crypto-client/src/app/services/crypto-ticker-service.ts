@@ -9,23 +9,23 @@ import { RxStompService } from '../rx-stomp.service';
 })
 export class CryptoTickerService {
 
-  // synced with the server.
   private tickerCache: Map<string, Ticker> = new Map();
 
   private tickersSubject = new BehaviorSubject<Ticker[]>([]);
   tickers$ = this.tickersSubject.asObservable();
 
+
   constructor(private rxStompService: RxStompService) { 
-    this.subscribeToTickerChannel();
+    this.subscribeToTickersChannelAndGetTop20();
   }
 
-    private subscribeToTickerChannel() {
+    private subscribeToTickersChannelAndGetTop20() {
       // gets the initial top 20 from the ws endpoint.
     this.rxStompService.publish({
-      destination: '/app/ticker',
+      destination: '/app/tickers',
     });
 
-    this.rxStompService.watch('/channel/ticker').subscribe((message: Message) => {
+    this.rxStompService.watch('/channel/tickers').subscribe((message: Message) => {
       const data = JSON.parse(message.body);
       if (Array.isArray(data)) {
         this.tickerCache.clear();

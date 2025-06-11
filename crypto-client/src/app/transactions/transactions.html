@@ -1,1 +1,39 @@
-<p>transactions works!</p>
+<div class="container">
+  <h2>User Transactions</h2>
+  <h3>
+    <a href="/">Back to tickers</a>
+  </h3>
+
+  <div *ngIf="transactions$ | async as transactions; else loading">
+    <div *ngIf="transactions.length; else noTransactions">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of transactions">
+            <td>{{ transaction.dateProduced }}</td>
+            <td>{{ transaction.symbol}}</td>
+            <td>${{ transaction.pricePerShare }}</td>
+            <td>{{ transaction.amountOfShares }}</td>
+            <td>{{transaction.action}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <p>Loading transactions...</p>
+  </ng-template>
+
+  <ng-template #noTransactions>
+    <p>No transactions available for this user.</p>
+  </ng-template>
+</div>

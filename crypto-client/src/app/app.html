@@ -6,6 +6,6 @@
 </div>
 
     <ng-template #mainContent>
-      <h1>Welcome, {{ globalState.getUser().username }}!</h1>
+      <h1 class="container">Welcome, {{ globalState.getUsername() }}!</h1>
       <router-outlet></router-outlet>
     </ng-template>

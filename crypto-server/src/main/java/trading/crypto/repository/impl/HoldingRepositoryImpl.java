@@ -49,8 +49,8 @@ public class HoldingRepositoryImpl implements HoldingRepository {
 
     @Override
     public List<Holding> findAllForUserId(long userId) {
-        String sql = "SELECT * FROM holdings WHERE did = ?;";
-        var holdings = jdbcTemplate.query(sql, (rs, _) ->
+        String sql = "SELECT * FROM holdings WHERE user_id = ?;";
+        var holdings = jdbcTemplate.query(sql, new Object[] {userId}, (rs, _) ->
                 new Holding(rs.getLong("did"),
                         rs.getLong("user_id"),
                         rs.getDouble("invested"),

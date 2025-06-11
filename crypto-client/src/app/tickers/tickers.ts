@@ -17,6 +17,8 @@ import { Holding } from '../types/holding';
   styleUrl: './tickers.scss'
 })
 export class Tickers implements OnInit {
+  errorMsg: boolean = false;
+  errorString: string = '';
 
   // unwrap the enum since imports are private in angular
   protected action = TransactionType;
@@ -25,8 +27,6 @@ export class Tickers implements OnInit {
   private httpClient = inject(HttpClient);
   public globalStateService = inject(GlobalStateService);
     tickers: Ticker[] = [];
-
-
     constructor(private tickerService: CryptoTickerService, private changeDetector: ChangeDetectorRef) {
     }
 
@@ -56,11 +56,11 @@ export class Tickers implements OnInit {
     }
 
     private loadCashBalance(): void {
-    const user = this.globalStateService.getUser();
-    if (user.username !== null) {
+    const user = this.globalStateService.getUsername();
+    if (user !== null) {
       this.httpClient
-        .get<number>('http://localhost:8080/cash/' + user.username)
-        .subscribe((data) => this.globalStateService.updateUser({id: user.id, username: user.username, cash: data}));
+        .get<number>('http://localhost:8080/cash/' + user)
+        .subscribe((data) => this.globalStateService.updateUser({id: this.globalStateService.getUserId(), username: user, cash: data}));
     }
   }
 
@@ -97,33 +97,51 @@ export class Tickers implements OnInit {
     }
 
     private sell(transaction: Transaction, user: User){
-      const newBalance = user.cash + transaction.pricePerShare * transaction.amountOfShares;
-      const updateCashRequestBody = {
-          username: user.username,
-          newAmount: newBalance
-        };
-        const updatedUserData: User = {
-          id: user.id,
-          username: user.username,
-          cash: newBalance
-        };
+      let newBalance: number;
         this.httpClient.post("http://localhost:8080/registerTransaction", transaction).subscribe((x) => {});
-        this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
         this.httpClient.get<Holding>(`http://localhost:8080/holdings/${user.id}?symbol=${transaction.symbol}`).subscribe((x) => {
           // sell partial.
           if(x !== null){
+            newBalance = user.cash + (transaction.pricePerShare - x.avg) * x.shareAmount + x.invested;
             if(x.shareAmount > transaction.amountOfShares){
               const newAvg = (x.invested + (transaction.pricePerShare * transaction.amountOfShares)) / (x.shareAmount + transaction.amountOfShares);
               this.registerHolding(x.id, user.id, x.symbol, x.invested - (transaction.pricePerShare * transaction.amountOfShares), x.shareAmount - transaction.amountOfShares, newAvg);
+              const updateCashRequestBody = {
+                  username: user.username,
+                  newAmount: newBalance
+                };
+                const updatedUserData: User = {
+                  id: user.id,
+                  username: user.username,
+                  cash: newBalance
+                };
+              this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
               this.globalStateService.updateUser(updatedUserData);
+              
             }
-            else{
+            else if (x.shareAmount == transaction.amountOfShares){
             // sell everything.
             this.httpClient.delete(`http://localhost:8080/holdings/delete/${user.id}?symbol=${transaction.symbol}`).subscribe((x) =>{
               if(x){
+                
+              // code duplication but its 22:40 and I have to study for finals afterwards so dont care
+              const updateCashRequestBody = {
+                username: user.username,
+                newAmount: newBalance
+              };
+              const updatedUserData: User = {
+                id: user.id,
+                username: user.username,
+                cash: newBalance
+              };
+                this.httpClient.post("http://localhost:8080/cash/update", updateCashRequestBody).subscribe((x) => {});
                 this.globalStateService.updateUser(updatedUserData);
               }
             })
+          }
+          else{
+            this.errorMsg = true;
+            this.errorString = "You can't sell more shares than the amount you own."
           }
           }
         });
@@ -156,6 +174,10 @@ export class Tickers implements OnInit {
             this.globalStateService.updateUser(updatedUserData);
           }
         });
+      }
+      else{
+        this.errorMsg = true;
+        this.errorString = "You do not have enough funds to buy this pair."
       }
     }
   }

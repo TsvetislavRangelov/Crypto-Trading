@@ -8,4 +8,5 @@ public interface TransactionRepository {
     List<Transaction> findAll();
     Transaction find(long id);
     void delete(long userId);
+    List<Transaction> findByUserId(long userId);
 }

@@ -3,11 +3,12 @@
   <button (click)="resetAccount()">Reset</button>
   <div style="display: flex;">
     <h4>
-      <a href="#holdings">Holdings</a>
+      <a href="/holdings">Holdings</a>
     </h4>
     <h4>
       <a href="/transactions">Transactions</a>
     </h4>
+    <h4 *ngIf="errorMsg">{{errorString}}</h4>
   </div>
   <table>
     <thead>
@@ -30,8 +31,8 @@
         </td>
         <td>
           <input [(ngModel)]="quantities[i]" type="number" placeholder="quantity" />
-          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.BUY)">Buy</button>
-          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.SELL)">Sell</button>
+          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.BUY)" [disabled]="quantities[i] <= 0">Buy</button>
+          <button (click)="executeTransaction(ticker.symbol, ticker.price, quantities[i], action.SELL)" [disabled]="quantities[i] <= 0">Sell</button>
         </td>
       </tr>
     </tbody>
